@@ -1,0 +1,396 @@
+{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset134 \'cb\'ce\'cc\'e5;}{\f1\fnil\fcharset0 ??;}{\f2\fnil\fcharset0 ??;}}
+{\*\generator Riched20 6.3.9600}\viewkind4\uc1 
+\pard\f0\fs22 from operator import add, sub, mul\par
+\par
+\par
+def prune_min(t):\par
+    """Prune the tree mutatively from the bottom up.\par
+\par
+    >>> t1 = Tree(6)\par
+    >>> prune_min(t1)\par
+    >>> t1\par
+    Tree(6)\par
+    >>> t2 = Tree(6, [Tree(3), Tree(4)])\par
+    >>> prune_min(t2)\par
+    >>> t2\par
+    Tree(6, [Tree(3)])\par
+    >>> t3 = Tree(6, [Tree(3, [Tree(1), Tree(2)]), Tree(5, [Tree(3), Tree(4)])])\par
+    >>> prune_min(t3)\par
+    >>> t3\par
+    Tree(6, [Tree(3, [Tree(1)])])\par
+    """\par
+    if is_leaf(t):\par
+        pass;\par
+    else:\par
+        largest = min(t.branches, key = lambda x: x.label);\par
+        t.branches.remove(largest);\par
+        for b in t.branches:\par
+            prune_min(b);\par
+\par
+def num_splits(s, d):\par
+    """Return the number of ways in which s can be partitioned into two\par
+    sublists that have sums within d of each other.\par
+\par
+    >>> num_splits([1, 5, 4], 0)  # splits to [1, 4] and [5]\par
+    1\par
+    >>> num_splits([6, 1, 3], 1)  # no split possible\par
+    0\par
+    >>> num_splits([-2, 1, 3], 2) # [-2, 3], [1] and [-2, 1, 3], []\par
+    2\par
+    >>> num_splits([1, 4, 6, 8, 2, 9, 5], 3)\par
+    12\par
+    """\par
+    \lang1033 def helper(s, n):\par
+        if len(s) == 0:\par
+           return 1 if abs(n) <= d else 0\par
+        first, rest = s[0], s[1:]\par
+        return helper(rest, n+first) +  helper(rest, n-first) \par
+    return helper(s, 0)//2\lang0\par
+\par
+class Account(object):\par
+    """A bank account that allows deposits and withdrawals.\par
+\par
+    >>> eric_account = Account('Eric')\par
+    >>> eric_account.deposit(1000000)   # depositing my paycheck for the week\par
+    1000000\par
+    >>> eric_account.transactions\par
+    [('deposit', 1000000)]\par
+    >>> eric_account.withdraw(100)      # buying dinner\par
+    999900\par
+    >>> eric_account.transactions\par
+    [('deposit', 1000000), ('withdraw', 100)]\par
+    """\par
+\par
+    interest = 0.02\par
+\par
+    def __init__(self, account_holder):\par
+        self.balance = 0\par
+        self.holder = account_holder\par
+\par
+    def deposit(self, amount):\par
+        """Increase the account balance by amount and return the\par
+        new balance.\par
+        """\par
+        self.balance = self.balance + amount\par
+        return self.balance\par
+\par
+    def withdraw(self, amount):\par
+        """Decrease the account balance by amount and return the\par
+        new balance.\par
+        """\par
+        if amount > self.balance:\par
+            return 'Insufficient funds'\par
+        self.balance = self.balance - amount\par
+        return self.balance\par
+class CheckingAccount(Account):\par
+    """A bank account that charges for withdrawals.\par
+\par
+    >>> check = Check("Steven", 42)  # 42 dollars, payable to Steven\par
+    >>> steven_account = CheckingAccount("Steven")\par
+    >>> eric_account = CheckingAccount("Eric")\par
+    >>> eric_account.deposit_check(check)  # trying to steal steven's money\par
+    The police have been notified.\par
+    >>> eric_account.balance\par
+    0\par
+    >>> check.deposited\par
+    False\par
+    >>> steven_account.balance\par
+    0\par
+    >>> steven_account.deposit_check(check)\par
+    42\par
+    >>> check.deposited\par
+    True\par
+    >>> steven_account.deposit_check(check)  # can't cash check twice\par
+    The police have been notified.\par
+    """\par
+    withdraw_fee = 1\par
+    interest = 0.01\par
+\par
+    def withdraw(self, amount):\par
+        return Account.withdraw(self, amount + self.withdraw_fee)\par
+\par
+
+\pard     "*** YOUR CODE HERE ***\lang1033 "\lang0\par
+
+\pard\lang1033     def deposit_check(self, check):\par
+        if check.pay_to != self.holder or check.deposited:\par
+           print("The police have been notified.")\par
+        else:\par
+           Account.deposit(self, check.amount)\par
+           check.deposited = True\par
+           return self.balance\par
+           \lang0\par
+class Check(object):\par
+
+\pard     \lang1033 def __init__(self, pay_to, amount):\par
+        self.pay_to = pay_to\par
+        self.amount = amount\par
+        self.deposited = FALSE\par
+
+\pard\lang0\par
+\par
+def align_skeleton(skeleton, code):\par
+    """\par
+    Aligns the given skeleton with the given code, minimizing the edit distance between\par
+    the two. Both skeleton and code are assumed to be valid one-line strings of code. \par
+\par
+    >>> align_skeleton(skeleton="", code="")\par
+    ''\par
+    >>> align_skeleton(skeleton="", code="i")\par
+    '+[i]'\par
+    >>> align_skeleton(skeleton="i", code="")\par
+    '-[i]'\par
+    >>> align_skeleton(skeleton="i", code="i")\par
+    'i'\par
+    >>> align_skeleton(skeleton="i", code="j")\par
+    '+[j]-[i]'\par
+    >>> align_skeleton(skeleton="x=5", code="x=6")\par
+    'x=+[6]-[5]'\par
+    >>> align_skeleton(skeleton="return x", code="return x+1")\par
+    'returnx+[+]+[1]'\par
+    >>> align_skeleton(skeleton="while x<y", code="for x<y")\par
+    '+[f]+[o]+[r]-[w]-[h]-[i]-[l]-[e]x<y'\par
+    >>> align_skeleton(skeleton="def f(x):", code="def g(x):")\par
+    'def+[g]-[f](x):'\par
+    """\par
+    skeleton, code = skeleton.replace(" ", ""), code.replace(" ", "")\par
+\par
+    def helper_align(skeleton_idx, code_idx):\par
+        """\par
+        Aligns the given skeletal segment with the code.\par
+        Returns (match, cost)\par
+            match: the sequence of corrections as a string\par
+            cost: the cost of the corrections, in edits\par
+        """\par
+        if skeleton_idx == len(skeleton) and code_idx == len(code):\par
+            return _________, ______________\par
+        if skeleton_idx < len(skeleton) and code_idx == len(code):\par
+            edits = "".join(["-[" + c + "]" for c in skeleton[skeleton_idx:]])\par
+            return _________, ______________\par
+        if skeleton_idx == len(skeleton) and code_idx < len(code):\par
+            edits = "".join(["+[" + c + "]" for c in code[code_idx:]])\par
+            return _________, ______________\par
+        \par
+        possibilities = []\par
+        skel_char, code_char = skeleton[skeleton_idx], code[code_idx]\par
+        # Match\par
+        if skel_char == code_char:\par
+            _________________________________________\par
+            _________________________________________\par
+            possibilities.append((_______, ______))\par
+        # Insert\par
+        _________________________________________\par
+        _________________________________________\par
+        possibilities.append((_______, ______))\par
+        # Delete\par
+        _________________________________________\par
+        _________________________________________\par
+        possibilities.append((_______, ______))\par
+        return min(possibilities, key=lambda x: x[1])\par
+    result, cost = helper_align(\f1\lang1033 0\f0\lang0 , \f1\lang1033 0\f0\lang0 )\par
+    return result\par
+\par
+\par
+def foldl(link, fn, z):\par
+    """ Left fold\par
+    >>> lst = Link(3, Link(2, Link(1)))\par
+    >>> foldl(lst, sub, 0) # (((0 - 3) - 2) - 1)\par
+    -6\par
+    >>> foldl(lst, add, 0) # (((0 + 3) + 2) + 1)\par
+    6\par
+    >>> foldl(lst, mul, 1) # (((1 * 3) * 2) * 1)\par
+    6\par
+    """\par
+    if link is Link.empty:\par
+        return \lang1033 z\lang0     \par
+    return foldl(\lang1033 lst.rest\lang0 , \lang1033 fn\lang0 , \lang1033 fn(z, lst.first)\lang0 )\par
+\par
+\par
+
+\pard def fold\f1\lang1033 r\f0\lang0 (link, fn, z):\par
+    """ \f1\lang1033 Right\f0\lang0  fold\par
+    >>> lst = Link(3, Link(2, Link(1)))\par
+    >>> foldl(lst, sub, 0) \par
+    \f1\lang1033 2\f0\lang0\par
+    >>> foldl(lst, add, 0) \par
+    6\par
+    >>> foldl(lst, mul, 1) \par
+    6\par
+    """\par
+    if link is Link.empty:\par
+        return \lang1033 z\lang0     \par
+    return \lang1033 fn(link.first, foldr(link.rest, fn, z))\lang0\par
+
+\pard\par
+def filterl(lst, pred):\par
+    """ Filters LST based on PRED\par
+    >>> lst = Link(4, Link(3, Link(2, Link(1))))\par
+    >>> filterl(lst, lambda x: x % 2 == 0)\par
+    Link(4, Link(2))\par
+    ""\lang1033 "\lang0\par
+    \lang1033 if lst is Link.empty:\par
+       return lst\par
+    elif pred(lst.first):\par
+       rest = lst.rest\par
+       return Link(lst.first, filterl(rest, pred)) \par
+    else:\par
+       return filterl(rest, pred)\lang0\par
+\par
+\par
+def reverse(lst):\par
+    """ Reverses LST with foldl\par
+    >>> reverse(Link(3, Link(2, Link(1))))\par
+    Link(1, Link(2, Link(3)))\par
+    >>> reverse(Link(1))\par
+    Link(1)\par
+    >>> reversed = reverse(Link.empty)\par
+    >>> reversed is Link.empty\par
+    True\par
+    """\par
+    \lang1033 return foldl(lst, lambda x,y: Link(\f1 y\f0 ,Link(\f1 x\f0 )), Link.empty)\lang0\par
+\par
+identity = lambda x: x\par
+\par
+def foldl2(link, fn, z):\par
+    """ Write foldl using foldr\par
+    >>> list = Link(3, Link(2, Link(1)))\par
+    >>> foldl2(list, sub, 0) # (((0 - 3) - 2) - 1)\par
+    -6\par
+    >>> foldl2(list, add, 0) # (((0 + 3) + 2) + 1)\par
+    6\par
+    >>> foldl2(list, mul, 1) # (((1 * 3) * 2) * 1)\par
+    6\par
+    """\par
+    def step(x, g):\par
+        \lang1033 ### return lambda y: g(fn(y, x))\lang0\par
+    return foldr(link, step, identity)(z)\par
+\par
+\par
+
+\pard def fold\f2\lang1033 r\f0\lang0 (link, fn, z):\par
+    if link is Link.empty:\par
+        return \lang1033 z\lang0     \par
+    return \lang1033 fn(link.first, foldr(link.rest, fn, z))\lang0\par
+
+\pard\par
+\par
+\par
+class Tree:\par
+    """\par
+    >>> t = Tree(3, [Tree(2, [Tree(5)]), Tree(4)])\par
+    >>> t.label\par
+    3\par
+    >>> t.branches[0].label\par
+    2\par
+    >>> t.branches[1].is_leaf()\par
+    True\par
+    """\par
+    def __init__(self, label, branches=[]):\par
+        for b in branches:\par
+            assert isinstance(b, Tree)\par
+        self.label = label\par
+        self.branches = list(branches)\par
+\par
+    def is_leaf(self):\par
+        return not self.branches\par
+\par
+    def map(self, fn):\par
+        """\par
+        Apply a function `fn` to each node in the tree and mutate the tree.\par
+\par
+        >>> t1 = Tree(1)\par
+        >>> t1.map(lambda x: x + 2)\par
+        >>> t1.map(lambda x : x * 4)\par
+        >>> t1.label\par
+        12\par
+        >>> t2 = Tree(3, [Tree(2, [Tree(5)]), Tree(4)])\par
+        >>> t2.map(lambda x: x * x)\par
+        >>> t2\par
+        Tree(9, [Tree(4, [Tree(25)]), Tree(16)])\par
+        """\par
+        self.label = fn(self.label)\par
+        for b in self.branches:\par
+            b.map(fn)\par
+\par
+    def __contains__(self, e):\par
+        """\par
+        Determine whether an element exists in the tree.\par
+\par
+        >>> t1 = Tree(1)\par
+        >>> 1 in t1\par
+        True\par
+        >>> 8 in t1\par
+        False\par
+        >>> t2 = Tree(3, [Tree(2, [Tree(5)]), Tree(4)])\par
+        >>> 6 in t2\par
+        False\par
+        >>> 5 in t2\par
+        True\par
+        """\par
+        if self.label == e:\par
+            return True\par
+        for b in self.branches:\par
+            if e in b:\par
+                return True\par
+        return False\par
+\par
+    def __repr__(self):\par
+        if self.branches:\par
+            branch_str = ', ' + repr(self.branches)\par
+        else:\par
+            branch_str = ''\par
+        return 'Tree(\{0\}\{1\})'.format(self.label, branch_str)\par
+\par
+    def __str__(self):\par
+        def print_tree(t, indent=0):\par
+            tree_str = '  ' * indent + str(t.label) + "\\n"\par
+            for b in t.branches:\par
+                tree_str += print_tree(b, indent + 1)\par
+            return tree_str\par
+        return print_tree(self).rstrip()\par
+\par
+\par
+class Link:\par
+    """A linked list.\par
+\par
+    >>> s = Link(1)\par
+    >>> s.first\par
+    1\par
+    >>> s.rest is Link.empty\par
+    True\par
+    >>> s = Link(2, Link(3, Link(4)))\par
+    >>> s.first = 5\par
+    >>> s.rest.first = 6\par
+    >>> s.rest.rest = Link.empty\par
+    >>> s                                    # Displays the contents of repr(s)\par
+    Link(5, Link(6))\par
+    >>> s.rest = Link(7, Link(Link(8, Link(9))))\par
+    >>> s\par
+    Link(5, Link(7, Link(Link(8, Link(9)))))\par
+    >>> print(s)                             # Prints str(s)\par
+    <5 7 <8 9>>\par
+    """\par
+    empty = ()\par
+\par
+    def __init__(self, first, rest=empty):\par
+        assert rest is Link.empty or isinstance(rest, Link)\par
+        self.first = first\par
+        self.rest = rest\par
+\par
+    def __repr__(self):\par
+        if self.rest is not Link.empty:\par
+            rest_repr = ', ' + repr(self.rest)\par
+        else:\par
+            rest_repr = ''\par
+        return 'Link(' + repr(self.first) + rest_repr + ')'\par
+\par
+    def __str__(self):\par
+        string = '<'\par
+        while self.rest is not Link.empty:\par
+            string += str(self.first) + ' '\par
+            self = self.rest\par
+        return string + str(self.first) + '>'\par
+\par
+\par
+}
+ 
